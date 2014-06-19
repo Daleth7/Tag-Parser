@@ -13,7 +13,7 @@ auto Tag_Parser_Raw<T, Key, StringType>::get(
     const key_type& key,
     const str_type& lang
 )const -> range_type{
-    return  this->has(key)
+    return  this->has(key, lang)
             ? m_storage.find(lang)->second.equal_range(key)
             : range_type(m_storage.find(lang)->second.cend()
                 , m_storage.find(lang)->second.cend())
