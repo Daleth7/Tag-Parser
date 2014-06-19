@@ -53,7 +53,7 @@ void Tag_Parser_Raw<T, Key, StringType>::load(const str_type& filepath)
     str_type markup_language;
     auto tolower = [](str_type& s)
                     {for(auto& ch : s) ch = std::tolower(ch);};
-    do{
+    while(true){
         markup_language.clear();
         data >> std::ws;
         char start = data.get();
@@ -62,11 +62,16 @@ void Tag_Parser_Raw<T, Key, StringType>::load(const str_type& filepath)
         if(start != '<')
             throw std::runtime_error(filepath + " is in an invalid format.");
         std::getline(data, markup_language, '>');
+        if(markup_language.front() == '!')
+            continue;
         tolower(markup_language);
-        if(data.fail())
-            return;
-        m_storage.insert({markup_language, tag_pack_type()});
-    }while(this->load_tags(markup_language, m_storage[markup_language], data));
+            //Check this inside the body so that any continue statements
+            //  don't accidentally call load_tags().
+        if(
+            data.fail() ||
+            !this->load_tags(markup_language, m_storage[markup_language], data)
+        )   return;
+    }
 }
 
 template <typename T, typename Key, typename StringType>
@@ -136,7 +141,7 @@ bool Tag_Parser_Raw<T, Key, StringType>::load_tags(
         if(key_str.front() == '/'){
             if(key_str.substr(1) == lang)   return (data >> std::ws);
             else                            continue;
-        }
+        }else if(key_str.front() == '!')    continue;
 
         str_type attr_str, text;
         packet_type packet;
