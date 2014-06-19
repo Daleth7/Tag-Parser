@@ -44,12 +44,9 @@ std::size_t Tag_Parser_Raw<T, Key, StringType>::size(const str_type& lang)const{
 }
 
 template <typename T, typename Key, typename StringType>
-void Tag_Parser_Raw<T, Key, StringType>::load(const str_type& filepath)
-    throw(std::runtime_error)
-{
-    std::ifstream data(filepath);
-    if(!data.is_open())
-        throw std::runtime_error("Could not open " + filepath);
+void Tag_Parser_Raw<T, Key, StringType>::load
+    (std::istream& data)
+throw(std::runtime_error){
     str_type markup_language;
     auto tolower = [](str_type& s)
                     {for(auto& ch : s) ch = std::tolower(ch);};
@@ -60,7 +57,7 @@ void Tag_Parser_Raw<T, Key, StringType>::load(const str_type& filepath)
         if(data.fail())
             return;
         if(start != '<')
-            throw std::runtime_error(filepath + " is in an invalid format.");
+            throw std::runtime_error("Input is in an invalid format.");
         std::getline(data, markup_language, '>');
         if(markup_language.front() == '!')
             continue;
@@ -75,14 +72,35 @@ void Tag_Parser_Raw<T, Key, StringType>::load(const str_type& filepath)
 }
 
 template <typename T, typename Key, typename StringType>
-template <typename... Str_Pack>
+template <typename... IStream_Pack>
 void Tag_Parser_Raw<T, Key, StringType>::load(
+    std::istream& src1,
+    std::istream& src2,
+    IStream_Pack&... srcn
+)throw(std::runtime_error){
+    this->load(src1);
+    this->load(src2, srcn...);
+}
+
+template <typename T, typename Key, typename StringType>
+void Tag_Parser_Raw<T, Key, StringType>::load_from_file(const str_type& filepath)
+    throw(std::runtime_error)
+{
+    std::ifstream data(filepath);
+    if(!data.is_open())
+        throw std::runtime_error("Could not open " + filepath);
+    this->load(data);
+}
+
+template <typename T, typename Key, typename StringType>
+template <typename... Str_Pack>
+void Tag_Parser_Raw<T, Key, StringType>::load_from_file(
     const str_type& file1,
     const str_type& file2,
     const Str_Pack&... filen
 ) throw(std::runtime_error){
-    this->load(file1);
-    this->load(file2, filen...);
+    this->load_from_file(file1);
+    this->load_from_file(file2, filen...);
 }
 
 template <typename T, typename Key, typename StringType>
@@ -118,7 +136,7 @@ Tag_Parser_Raw<T, Key, StringType>::Tag_Parser_Raw(
     const Str_Pack&... filen
 )
     : m_storage()
-{this->load(file1, filen...);}
+{this->load_from_file(file1, filen...);}
 
 template <typename T, typename Key, typename StringType>
 bool Tag_Parser_Raw<T, Key, StringType>::load_tags(

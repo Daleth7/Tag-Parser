@@ -148,20 +148,13 @@ void Tag_Parser<T, Key, StringType>::reset_tag(){
 
 template <typename T, typename Key, typename StringType>
 void Tag_Parser<T, Key, StringType>::bookmark(){
-    m_bookmark.reset(new bookmark_type);
-    m_bookmark->m_lang  = m_place.m_lang;
-    m_bookmark->m_tag   = m_place.m_tag;
-    m_bookmark->m_range = m_place.m_range;
-    m_bookmark->m_ptr   = m_place.m_ptr;
+    m_bookmark.reset(new bookmark_type(m_place));
 }
 
 template <typename T, typename Key, typename StringType>
 void Tag_Parser<T, Key, StringType>::load_bookmark(){
     if(this->has_bookmark()){
-        std::swap(m_bookmark->m_lang,   m_place.m_lang);
-        std::swap(m_bookmark->m_tag,    m_place.m_tag);
-        std::swap(m_bookmark->m_range,  m_place.m_range);
-        std::swap(m_bookmark->m_ptr,    m_place.m_ptr);
+        std::swap(*m_bookmark, m_place);
         m_bookmark.reset();
     }
 }

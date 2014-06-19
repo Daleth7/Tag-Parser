@@ -45,10 +45,17 @@ class Tag_Parser_Raw{
         std::size_t size(const str_type& = "xml")const;
 
             //Calling load() will not dump existing data
-        void load(const str_type& filepath) throw(std::runtime_error);
-            //For loading more than one file
+        void load(std::istream& filepath) throw(std::runtime_error);
+            //For loading from more than one source
+        template <typename... IStream_Pack>
+        void load(
+            std::istream&,
+            std::istream&,
+            IStream_Pack&...
+        )throw(std::runtime_error);
+        void load_from_file(const str_type& filepath) throw(std::runtime_error);
         template <typename... Str_Pack>
-        void load(const str_type&, const str_type&, const Str_Pack&...)
+        void load_from_file(const str_type&, const str_type&, const Str_Pack&...)
              throw(std::runtime_error);
         void erase(const key_type&, const str_type& = "xml");
             //Dump everything
