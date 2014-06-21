@@ -1,8 +1,6 @@
 #ifndef DATA_PARSER_H_HHH____RAW_0009435_
 #define DATA_PARSER_H_HHH____RAW_0009435_
 
-#include "Tag_Parser_Default_Interpreter.h"
-
 #include <map>
 #include <unordered_map>
 #include <stdexcept>
