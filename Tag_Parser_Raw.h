@@ -1,6 +1,8 @@
 #ifndef DATA_PARSER_H_HHH____RAW_0009435_
 #define DATA_PARSER_H_HHH____RAW_0009435_
 
+#include "Tag_Parser_Default_Interpreter.h"
+
 #include <map>
 #include <unordered_map>
 #include <stdexcept>
@@ -20,7 +22,7 @@ namespace std{
 }
 
 template <
-    typename T          = std::string,
+    typename T          = Tag_Parser_Default_Interpreter,
     typename Key        = std::string,
     typename StringType = std::string
 >

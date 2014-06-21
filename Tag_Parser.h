@@ -8,7 +8,7 @@
 
     //Interface only
 template <
-    typename T = std::string,
+    typename T = Tag_Parser_Default_Interpreter,
     typename Key = std::string,
     typename StringType = std::string
 >
