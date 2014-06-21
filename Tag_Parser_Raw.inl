@@ -138,6 +138,52 @@ Tag_Parser_Raw<T, Key, StringType>::Tag_Parser_Raw(
     : m_storage()
 {this->load_from_file(file1, filen...);}
 
+#include <type_traits>
+namespace Tag_Parser_Raw_Helper{
+    template <typename StringType, typename CondType, typename InterpreterType>
+    struct assign_value{
+        static void assign(
+            const StringType& s,
+            const StringType& attr_name,
+            InterpreterType& i
+        ){i = InterpreterType(attr_name, s);}
+    };
+
+    template <typename StringType, typename CondType, typename T>
+    struct assign_value<StringType, CondType, std::basic_string<T> >{
+        static void assign(
+            const StringType& s,
+            const StringType&,
+            std::basic_string<T>& i
+        ){i = s;}
+    };
+
+    template <typename StringType, typename InterpreterType>
+    struct assign_value<StringType, std::true_type, InterpreterType>{
+        static void assign(
+            const StringType& s,
+            const StringType&,
+            InterpreterType& i
+        ){
+            std::basic_istringstream<typename StringType::value_type> ss(s);
+            ss >> i;
+        }
+    };
+
+    template <typename StringType, typename InterpreterType>
+    void choose_communication(
+        const StringType& s,
+        const StringType& attr_name,
+        InterpreterType& i
+    ){
+        assign_value<
+            StringType,
+            typename std::is_fundamental<InterpreterType>::type,
+            InterpreterType
+            >::assign(s, attr_name, i);
+    }
+}
+
 template <typename T, typename Key, typename StringType>
 bool Tag_Parser_Raw<T, Key, StringType>::load_tags(
     const str_type& lang,
@@ -173,7 +219,7 @@ bool Tag_Parser_Raw<T, Key, StringType>::load_tags(
             if(!(look_for_text = attr_str.back() != '/'))
                 attr_str.pop_back();
 
-            std::istringstream iss(attr_str);
+            std::basic_istringstream<typename str_type::value_type> iss(attr_str);
             while(
                 (iss >> std::ws)                    &&
                 std::getline(iss, attr_str, '=')    &&
@@ -202,7 +248,10 @@ bool Tag_Parser_Raw<T, Key, StringType>::load_tags(
                 }
                 tolower(value_str);
                 tolower(attr_str);
-                packet.insert({attr_str, value_type(value_str)});
+                value_type interpreter;
+                Tag_Parser_Raw_Helper::choose_communication
+                    (value_str, attr_str, interpreter);
+                packet.insert({attr_str, interpreter});
             }
 
             if(look_for_text){

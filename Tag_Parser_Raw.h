@@ -22,13 +22,13 @@ namespace std{
 }
 
 template <
-    typename T          = Tag_Parser_Default_Interpreter,
-    typename Key        = std::string,
-    typename StringType = std::string
+    typename InterpreterType    = std::string,
+    typename Key                = std::string,
+    typename StringType         = std::string
 >
 class Tag_Parser_Raw{
     public:
-        using value_type    = T;
+        using value_type    = InterpreterType;
         using key_type      = Key;
         using str_type      = StringType;
         using packet_type   = std::map<key_type, value_type>;

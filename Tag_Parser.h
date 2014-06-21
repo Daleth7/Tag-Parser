@@ -8,13 +8,13 @@
 
     //Interface only
 template <
-    typename T = Tag_Parser_Default_Interpreter,
-    typename Key = std::string,
-    typename StringType = std::string
+    typename InterpreterType    = std::string,
+    typename Key                = std::string,
+    typename StringType         = std::string
 >
 class Tag_Parser{
     public:
-        using parser_type   = Tag_Parser_Raw<T, Key, StringType>;
+        using parser_type   = Tag_Parser_Raw<InterpreterType, Key, StringType>;
         using value_type    = typename parser_type::value_type;
         using attr_type     = typename parser_type::key_type;
         using str_type      = typename parser_type::str_type;

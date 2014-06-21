@@ -2,25 +2,44 @@
 Example file with the tags
 
 <MYMARKUPLANGUAGE>
-  <THISTAG ATTR = 55 ATTR2 = "Foobar" Space ATTR = "Attributes with spaces in the name will be clumped together: 'SpaceATTR'.">
-    This text is also accessible via the string() function.
-  </THISTAG>
+    <THISTAG ATTR = 55 ATTR2 = "Foobar" Space ATTR = "Attributes with spaces in the name will be clumped together: 'SpaceATTR'.">
+        This text is also accessible via the string() function.
+    </THISTAG>
 </MYMARKUPLANGUAGE>
 <!-- This is a comment -->
 <ANOTHERLANGUAGE>
-  <!-- This is another comment -->
-  <ONELINETAG ATTR = "One line tags are allowed if they end with '/'." />
-  <BORINGTAG  />
+    <!-- This is another comment -->
+    <ONELINETAG ATTR = "One line tags are allowed if they end with '/'." />
+    <BORINGTAG  />
 </ANOTHERLANGUAGE>
 
 
 
 Example use:
 
-struct Parser_Interface : Tag_Parser<> {
-  Parser_Interface()
-    : Tag_Parser("file.my_markup_language")
-  {}
+struct num_string_interpreter{
+    long double d_val;
+    std::string s_val;
+    operator long double()const
+        {return d_val;}
+    operator std::string()const
+        {return s_val;}
+    num_string_interpreter() = default;
+        //Normally, first parameter is the name of the attribute.
+    num_string_interpreter(const std::string&, long double ld)
+        : d_val(ld)
+        , s_val()
+    {}
+    num_string_interpreter(const std::string&, const std::string& s)
+        : d_val(0.0)
+        , s_val(s)
+    {}
+};
+struct Parser_Interface : Tag_Parser<num_string_interpreter> {
+    using base_type = Tag_Parser<num_string_interpreter>;
+    Parser_Interface()
+        : base_type::Tag_Parser("file.my_markup_language")
+    {}
 };
 
 Parser_Interface parser;
