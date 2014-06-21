@@ -25,9 +25,10 @@ struct Parser_Interface : Tag_Parser<> {
 
 Parser_Interface parser;
 
+parser.markup_language("mymarkuplanguage");
     // Sets which tag to look at. If there is more than one tag with the same
     //  name, available() and index(var) can be called to pick a specific tag.
-parser.tag("mymarkuplanguage");
+parser.tag("thistag");
 cout << "Attr: " << parser.get("attr") << '\n';
 cout << "String: " << parser.string() << '\n';
 cout << "\n\n";
