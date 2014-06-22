@@ -4,12 +4,16 @@
 #include <sstream>
 #include <utility>
 
-template <typename T, typename Key, typename StringType>
-bool Tag_Parser_Raw<T, Key, StringType>::empty(const str_type& lang)const
+#define TPR_TEMPL_  \
+    template <typename InterpreterType, typename Key, typename StringType>
+#define TPR_INST_   Tag_Parser_Raw<InterpreterType, Key, StringType>
+
+TPR_TEMPL_
+bool TPR_INST_::empty(const str_type& lang)const
     {return m_storage.find(lang)->second.empty();}
 
-template <typename T, typename Key, typename StringType>
-auto Tag_Parser_Raw<T, Key, StringType>::get(
+TPR_TEMPL_
+auto TPR_INST_::get(
     const key_type& key,
     const str_type& lang
 )const -> range_type{
@@ -20,8 +24,8 @@ auto Tag_Parser_Raw<T, Key, StringType>::get(
     ;
 }
 
-template <typename T, typename Key, typename StringType>
-bool Tag_Parser_Raw<T, Key, StringType>::has(
+TPR_TEMPL_
+bool TPR_INST_::has(
     const key_type& k,
     const str_type& lang
 )const{
@@ -32,34 +36,35 @@ bool Tag_Parser_Raw<T, Key, StringType>::has(
     ;
 }
 
-template <typename T, typename Key, typename StringType>
-bool Tag_Parser_Raw<T, Key, StringType>::has_language
+TPR_TEMPL_
+bool TPR_INST_::has_language
     (const str_type& test_lang)const
 {return m_storage.find(test_lang) != m_storage.cend();}
 
-template <typename T, typename Key, typename StringType>
-std::size_t Tag_Parser_Raw<T, Key, StringType>::size(const str_type& lang)const{
+TPR_TEMPL_
+std::size_t TPR_INST_::size(const str_type& lang)const{
     auto iter = m_storage.find(lang);
     return iter != m_storage.cend() ? iter->second.size() : 0;
 }
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser_Raw<T, Key, StringType>::load
-    (std::istream& data)
+TPR_TEMPL_
+void TPR_INST_::load
+    (istream_type& data)
 throw(std::runtime_error){
     str_type markup_language;
     auto tolower = [](str_type& s)
                     {for(auto& ch : s) ch = std::tolower(ch);};
     while(true){
+        //First grab the language tag. Load any sub-tags and repeat.
         markup_language.clear();
         data >> std::ws;
-        char start = data.get();
+        const char start = data.get();
         if(data.fail())
             return;
         if(start != '<')
             throw std::runtime_error("Input is in an invalid format.");
         std::getline(data, markup_language, '>');
-        if(markup_language.front() == '!')
+        if(is_comment(markup_language, data))
             continue;
         tolower(markup_language);
             //Check this inside the body so that any continue statements
@@ -71,30 +76,49 @@ throw(std::runtime_error){
     }
 }
 
-template <typename T, typename Key, typename StringType>
+TPR_TEMPL_
 template <typename... IStream_Pack>
-void Tag_Parser_Raw<T, Key, StringType>::load(
-    std::istream& src1,
-    std::istream& src2,
+void TPR_INST_::load(
+    istream_type& src1,
+    istream_type& src2,
     IStream_Pack&... srcn
 )throw(std::runtime_error){
     this->load(src1);
     this->load(src2, srcn...);
 }
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser_Raw<T, Key, StringType>::load_from_file(const str_type& filepath)
+TPR_TEMPL_
+void TPR_INST_::load(const str_type& src)
     throw(std::runtime_error)
 {
-    std::ifstream data(filepath);
+    std::basic_istringstream<typename str_type::value_type> data(src);
+    this->load(data);
+}
+
+TPR_TEMPL_
+template <typename... Str_Pack>
+void TPR_INST_::load(
+    const str_type& src1,
+    const str_type& src2,
+    const Str_Pack&... srcn
+) throw(std::runtime_error){
+    this->load(src1);
+    this->load(src2, srcn...);
+}
+
+TPR_TEMPL_
+void TPR_INST_::load_from_file(const str_type& filepath)
+    throw(std::runtime_error)
+{
+    std::basic_ifstream<typename str_type::value_type> data(filepath);
     if(!data.is_open())
         throw std::runtime_error("Could not open " + filepath);
     this->load(data);
 }
 
-template <typename T, typename Key, typename StringType>
+TPR_TEMPL_
 template <typename... Str_Pack>
-void Tag_Parser_Raw<T, Key, StringType>::load_from_file(
+void TPR_INST_::load_from_file(
     const str_type& file1,
     const str_type& file2,
     const Str_Pack&... filen
@@ -103,8 +127,8 @@ void Tag_Parser_Raw<T, Key, StringType>::load_from_file(
     this->load_from_file(file2, filen...);
 }
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser_Raw<T, Key, StringType>::erase
+TPR_TEMPL_
+void TPR_INST_::erase
     (const key_type& key, const str_type& lang)
 {
     auto iter = m_storage.find(lang);
@@ -112,26 +136,26 @@ void Tag_Parser_Raw<T, Key, StringType>::erase
         iter->second.erase(key);
 }
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser_Raw<T, Key, StringType>::dump()
+TPR_TEMPL_
+void TPR_INST_::dump()
     {m_storage.clear();}
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser_Raw<T, Key, StringType>::dump(const str_type& lang){
+TPR_TEMPL_
+void TPR_INST_::dump(const str_type& lang){
     auto iter = m_storage.find(lang);
     if(iter != m_storage.cend())
         iter->second.clear();
 }
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser_Raw<T, Key, StringType>::dump_to(storage_type& collector){
+TPR_TEMPL_
+void TPR_INST_::dump_to(storage_type& collector){
     std::swap(collector, m_storage);
     m_storage.clear();
 }
 
-template <typename T, typename Key, typename StringType>
+TPR_TEMPL_
 template <typename... Str_Pack>
-Tag_Parser_Raw<T, Key, StringType>::Tag_Parser_Raw(
+TPR_INST_::Tag_Parser_Raw(
     const str_type& file1,
     const Str_Pack&... filen
 )
@@ -184,16 +208,17 @@ namespace Tag_Parser_Raw_Helper{
     }
 }
 
-template <typename T, typename Key, typename StringType>
-bool Tag_Parser_Raw<T, Key, StringType>::load_tags(
+TPR_TEMPL_
+bool TPR_INST_::load_tags(
     const str_type& lang,
     tag_pack_type& stor,
-    std::istream& data
+    istream_type& data
 ){
     auto tolower = [](str_type& s)
                     {for(auto& ch : s) ch = std::tolower(ch);};
     const std::streamsize lim = std::numeric_limits<std::streamsize>::max();
     while(data.ignore(lim, '<')){
+        //Grab the tag name
         str_type key_str;
         data >> key_str;
         bool get_values(true);
@@ -202,10 +227,12 @@ bool Tag_Parser_Raw<T, Key, StringType>::load_tags(
             get_values = false;
         }
         tolower(key_str);
+        //If this turns out to be a closing tag, ignore it and move on
         if(key_str.front() == '/'){
             if(key_str.substr(1) == lang)   return (data >> std::ws);
             else                            continue;
-        }else if(key_str.front() == '!')    continue;
+            //Turns out to be a comment. Ignore.
+        }else if(is_comment(key_str, data)) continue;
 
         str_type attr_str, text;
         packet_type packet;
@@ -255,11 +282,8 @@ bool Tag_Parser_Raw<T, Key, StringType>::load_tags(
             }
 
             if(look_for_text){
-                if(
-                    !std::getline(data, text, '<')      ||
-                    !data.ignore(lim, '>')
-                )                           break;
-
+                text = this->read_tag_contents("</" + key_str, data);
+                if(data.fail())             break;
                 while(std::isspace(text.back()))
                     text.pop_back();
                 std::size_t pos(text.find('\n'));
@@ -285,3 +309,38 @@ bool Tag_Parser_Raw<T, Key, StringType>::load_tags(
 
     return data;
 }
+
+TPR_TEMPL_
+auto TPR_INST_::read_tag_contents(
+    const str_type& tag_closer,
+    istream_type& src
+) -> str_type{
+    str_type toreturn;
+    std::getline(src, toreturn, '>');
+    auto not_found_closer = [&toreturn](const str_type& cl){
+            str_type end(toreturn.substr(toreturn.size()-cl.size()));
+            for(auto& ch : end) ch = std::tolower(ch);
+            return end != cl;
+        };
+    while(not_found_closer(tag_closer) && src.good()){
+        str_type tail;
+        std::getline(src, tail, '>');
+        toreturn += ">" + tail;
+    }
+    std::size_t pos(toreturn.find_last_of('/'));
+    if(pos != str_type::npos)
+        toreturn.erase(pos-1);
+    return toreturn;
+}
+
+TPR_TEMPL_
+bool TPR_INST_::is_comment(const str_type& testee, istream_type& data){
+    if(testee.find("!--") == 0){
+        this->read_tag_contents("--", data);
+        return true;
+    }
+    return false;
+}
+
+#undef TPR_TEMPL_
+#undef TPR_INST_

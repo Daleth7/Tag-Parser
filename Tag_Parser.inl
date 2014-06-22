@@ -1,54 +1,58 @@
 #include <iterator>
 #include <utility>
 
-template <typename T, typename Key, typename StringType>
-auto Tag_Parser<T, Key, StringType>::markup_language()const -> const str_type&
+#define TP_TEMPL_   \
+    template <typename InterpreterType, typename Key, typename StringType>
+#define TP_INST_    Tag_Parser<InterpreterType, Key, StringType>
+
+TP_TEMPL_
+auto TP_INST_::markup_language()const -> const str_type&
     {return m_place.m_lang;}
 
-template <typename T, typename Key, typename StringType>
-auto Tag_Parser<T, Key, StringType>::tag()const -> const str_type&
+TP_TEMPL_
+auto TP_INST_::tag()const -> const str_type&
     {return m_place.m_tag;}
 
-template <typename T, typename Key, typename StringType>
-bool Tag_Parser<T, Key, StringType>::has
+TP_TEMPL_
+bool TP_INST_::has
     (const str_type& test_tag, const str_type& test_lang)const
-{return m_parser.has(test_tag, test_lang);}
+{return m_raw.has(test_tag, test_lang);}
 
-template <typename T, typename Key, typename StringType>
-bool Tag_Parser<T, Key, StringType>::has(const str_type& test_tag)const
-    {return m_parser.has(test_tag, m_place.m_lang);}
+TP_TEMPL_
+bool TP_INST_::has(const str_type& test_tag)const
+    {return m_raw.has(test_tag, m_place.m_lang);}
 
-template <typename T, typename Key, typename StringType>
-bool Tag_Parser<T, Key, StringType>::has_attr(const str_type& attr)const{
+TP_TEMPL_
+bool TP_INST_::has_attr(const str_type& attr)const{
     const auto& packet = m_place.m_ptr->first;
     if(packet.find(attr) != packet.cend())
         return true;
     return false;
 }
 
-template <typename T, typename Key, typename StringType>
-bool Tag_Parser<T, Key, StringType>::has_bookmark()const
+TP_TEMPL_
+bool TP_INST_::has_bookmark()const
     {return m_bookmark != nullptr;}
 
-template <typename T, typename Key, typename StringType>
-std::size_t Tag_Parser<T, Key, StringType>::tags_available
+TP_TEMPL_
+std::size_t TP_INST_::tags_available
     (const str_type& test_lang)const
-{return m_parser.size(test_lang);}
+{return m_raw.size(test_lang);}
 
-template <typename T, typename Key, typename StringType>
-std::size_t Tag_Parser<T, Key, StringType>::tags_available()const
-    {return m_parser.size(m_place.m_lang);}
+TP_TEMPL_
+std::size_t TP_INST_::tags_available()const
+    {return m_raw.size(m_place.m_lang);}
 
-template <typename T, typename Key, typename StringType>
-std::ptrdiff_t Tag_Parser<T, Key, StringType>::available()const
+TP_TEMPL_
+std::ptrdiff_t TP_INST_::available()const
     {return std::distance(m_place.m_range.first, m_place.m_range.second);}
 
-template <typename T, typename Key, typename StringType>
-std::ptrdiff_t Tag_Parser<T, Key, StringType>::index()const
+TP_TEMPL_
+std::ptrdiff_t TP_INST_::index()const
     {return std::distance(m_place.m_range.first, m_place.m_ptr);}
 
-template <typename T, typename Key, typename StringType>
-auto Tag_Parser<T, Key, StringType>::get(
+TP_TEMPL_
+auto TP_INST_::get(
     const str_type& ttag,
     std::ptrdiff_t i,
     const attr_type& attr
@@ -60,8 +64,8 @@ auto Tag_Parser<T, Key, StringType>::get(
     return toreturn;
 }
 
-template <typename T, typename Key, typename StringType>
-auto Tag_Parser<T, Key, StringType>::get
+TP_TEMPL_
+auto TP_INST_::get
     (std::ptrdiff_t i, const attr_type& attr)const
 -> value_type {
     if(i >= this->available())
@@ -74,16 +78,16 @@ auto Tag_Parser<T, Key, StringType>::get
     return value_type(str_type());
 }
 
-template <typename T, typename Key, typename StringType>
-auto Tag_Parser<T, Key, StringType>::get(const attr_type& attr)const -> value_type {
+TP_TEMPL_
+auto TP_INST_::get(const attr_type& attr)const -> value_type {
     auto iter = m_place.m_ptr->second.first.find(attr);
     if(iter != m_place.m_ptr->second.first.cend())
         return iter->second;
     return value_type(str_type());
 }
 
-template <typename T, typename Key, typename StringType>
-auto Tag_Parser<T, Key, StringType>::string
+TP_TEMPL_
+auto TP_INST_::string
     (const str_type& ttag, std::ptrdiff_t i)
 -> str_type {
     str_type temp = m_place.m_tag;
@@ -93,8 +97,8 @@ auto Tag_Parser<T, Key, StringType>::string
     return toreturn;
 }
 
-template <typename T, typename Key, typename StringType>
-auto Tag_Parser<T, Key, StringType>::string(std::ptrdiff_t i)const -> str_type {
+TP_TEMPL_
+auto TP_INST_::string(std::ptrdiff_t i)const -> str_type {
     auto fiter = m_place.m_range.first;
     if(i >= this->available())
         return str_type();
@@ -102,25 +106,25 @@ auto Tag_Parser<T, Key, StringType>::string(std::ptrdiff_t i)const -> str_type {
     return fiter->second.second;
 }
 
-template <typename T, typename Key, typename StringType>
-auto Tag_Parser<T, Key, StringType>::string()const -> str_type
+TP_TEMPL_
+auto TP_INST_::string()const -> str_type
     {return m_place.m_ptr->second.second;}
 
-template <typename T, typename Key, typename StringType>
-auto Tag_Parser<T, Key, StringType>::raw()const -> const parser_type&
-    {return m_parser;}
+TP_TEMPL_
+auto TP_INST_::raw()const -> const raw_type&
+    {return m_raw;}
 
-template <typename T, typename Key, typename StringType>
-bool Tag_Parser<T, Key, StringType>::markup_language(const str_type& new_lang){
-    if(!m_parser.has_language(new_lang))
+TP_TEMPL_
+bool TP_INST_::markup_language(const str_type& new_lang){
+    if(!m_raw.has_language(new_lang))
         return false;
     m_place.m_lang = new_lang;
     this->reset_tag();
     return true;
 }
 
-template <typename T, typename Key, typename StringType>
-bool Tag_Parser<T, Key, StringType>::tag
+TP_TEMPL_
+bool TP_INST_::tag
     (const str_type& new_tag, const str_type& test_lang)
 {
     if(!this->has(new_tag))
@@ -130,94 +134,121 @@ bool Tag_Parser<T, Key, StringType>::tag
         return true;
     }
     m_place.m_tag = new_tag;
-    m_place.m_range = m_parser.get(m_place.m_tag, test_lang);
+    m_place.m_range = m_raw.get(m_place.m_tag, test_lang);
     m_place.m_ptr = m_place.m_range.first;
     return true;
 }
 
-template <typename T, typename Key, typename StringType>
-bool Tag_Parser<T, Key, StringType>::tag(const str_type& new_tag)
+TP_TEMPL_
+bool TP_INST_::tag(const str_type& new_tag)
     {return this->tag(new_tag, m_place.m_lang);}
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser<T, Key, StringType>::reset_tag(){
+TP_TEMPL_
+void TP_INST_::reset_tag(){
     m_place.m_tag.clear();
-    m_place.m_range = typename parser_type::range_type();
-    m_place.m_ptr = typename parser_type::iter_type();
+    m_place.m_range = typename raw_type::range_type();
+    m_place.m_ptr = typename raw_type::iter_type();
 }
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser<T, Key, StringType>::bookmark(){
+TP_TEMPL_
+void TP_INST_::bookmark(){
     m_bookmark.reset(new bookmark_type(m_place));
 }
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser<T, Key, StringType>::load_bookmark(){
+TP_TEMPL_
+void TP_INST_::load_bookmark(){
     if(this->has_bookmark()){
         std::swap(*m_bookmark, m_place);
         m_bookmark.reset();
     }
 }
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser<T, Key, StringType>::index(std::ptrdiff_t i){
+TP_TEMPL_
+void TP_INST_::index(std::ptrdiff_t i){
     m_place.m_ptr = m_place.m_range.first;
     std::advance(m_place.m_ptr, i);
 }
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser<T, Key, StringType>::load(const str_type& path)
-    {m_parser.load(path);}
+TP_TEMPL_
+void TP_INST_::load(istream_type& src)
+    {m_raw.load(src);}
 
-template <typename T, typename Key, typename StringType>
+TP_TEMPL_
+template <typename... IStream_Pack>
+void TP_INST_::load(
+    istream_type& src1,
+    istream_type& src2,
+    IStream_Pack&... srcn
+){m_raw.load(src1, src2, srcn...);}
+
+TP_TEMPL_
+void TP_INST_::load(str_type& src)
+    {m_raw.load(src);}
+
+TP_TEMPL_
 template <typename... Str_Pack>
-void Tag_Parser<T, Key, StringType>::load(
+void TP_INST_::load(
+    str_type& src1,
+    str_type& src2,
+    Str_Pack&... srcn
+){m_raw.load(src1, src2, srcn...);}
+
+TP_TEMPL_
+void TP_INST_::load_from_file(const str_type& path)
+    {m_raw.load_from_file(path);}
+
+TP_TEMPL_
+template <typename... Str_Pack>
+void TP_INST_::load_from_file(
     const str_type& path,
     const str_type& path2,
     const Str_Pack&... pathn
-){m_parser.load(path, path2, pathn...);}
+){m_raw.load_from_file(path, path2, pathn...);}
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser<T, Key, StringType>::erase(){
-    m_parser.erase(m_place.m_tag, m_place.m_lang);
+TP_TEMPL_
+void TP_INST_::erase(){
+    m_raw.erase(m_place.m_tag, m_place.m_lang);
     m_place.m_tag.clear();
 }
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser<T, Key, StringType>::dump()
-    {m_parser.dump();}
+TP_TEMPL_
+void TP_INST_::dump()
+    {m_raw.dump();}
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser<T, Key, StringType>::dump_to(storage_type& collector)
-    {m_parser.dump_to(collector);}
+TP_TEMPL_
+void TP_INST_::dump_to(storage_type& collector)
+    {m_raw.dump_to(collector);}
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser<T, Key, StringType>::raw(parser_type&& new_parser)
-    {m_parser = std::move(new_parser);}
+TP_TEMPL_
+void TP_INST_::raw(raw_type&& new_parser)
+    {m_raw = std::move(new_parser);}
 
-template <typename T, typename Key, typename StringType>
-Tag_Parser<T, Key, StringType>::bookmark_type::bookmark_type()
+TP_TEMPL_
+TP_INST_::bookmark_type::bookmark_type()
     : m_lang("xml")
     , m_tag("")
     , m_range()
     , m_ptr()
 {}
 
-template <typename T, typename Key, typename StringType>
-void Tag_Parser<T, Key, StringType>::initial_load(){}
+TP_TEMPL_
+void TP_INST_::initial_load(){}
 
-template <typename T, typename Key, typename StringType>
-Tag_Parser<T, Key, StringType>::Tag_Parser()
-    : m_parser()
+TP_TEMPL_
+TP_INST_::Tag_Parser()
+    : m_raw()
     , m_place()
     , m_bookmark(nullptr)
 {}
 
-template <typename T, typename Key, typename StringType>
+TP_TEMPL_
 template <typename... Str_Pack>
-Tag_Parser<T, Key, StringType>::Tag_Parser
+TP_INST_::Tag_Parser
     (const str_type& file1, const Str_Pack&... filen)
-    : m_parser(file1, filen...)
+    : m_raw(file1, filen...)
     , m_place()
     , m_bookmark(nullptr)
 {}
+
+#undef TP_TEMPL_
+#undef TP_INST_

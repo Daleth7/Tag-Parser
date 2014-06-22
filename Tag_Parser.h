@@ -14,12 +14,15 @@ template <
 >
 class Tag_Parser{
     public:
-        using parser_type   = Tag_Parser_Raw<InterpreterType, Key, StringType>;
-        using value_type    = typename parser_type::value_type;
-        using attr_type     = typename parser_type::key_type;
-        using str_type      = typename parser_type::str_type;
-        using storage_type  = typename parser_type::storage_type;
+    //Type aliases
+        using raw_type      = Tag_Parser_Raw<InterpreterType, Key, StringType>;
+        using value_type    = typename raw_type::value_type;
+        using attr_type     = typename raw_type::key_type;
+        using str_type      = typename raw_type::str_type;
+        using storage_type  = typename raw_type::storage_type;
+        using istream_type  = typename raw_type::istream_type;
 
+    //Read only
         const str_type& markup_language()const;
 
         const str_type& tag()const;
@@ -57,8 +60,9 @@ class Tag_Parser{
 
         virtual str_type string()const;
 
-        const parser_type& raw()const;
+        const raw_type& raw()const;
 
+    //Setting modifiers
         bool markup_language(const str_type& new_lang);
 
             //Return whether or not the tag was successfully changed
@@ -74,15 +78,35 @@ class Tag_Parser{
 
         void index(std::ptrdiff_t i);
 
-        void load(const str_type& path);
+    //Loading
+        void load(istream_type& src);
+
+        template <typename... IStream_Pack>
+            void load(
+                istream_type& src1,
+                istream_type& src2,
+                IStream_Pack&... srcn
+            );
+
+        void load(str_type& src);
 
         template <typename... Str_Pack>
-        void load(
-            const str_type& path,
-            const str_type& path2,
-            const Str_Pack&... pathn
-        );
+            void load(
+                str_type& src1,
+                str_type& src2,
+                Str_Pack&... srcn
+            );
 
+        void load_from_file(const str_type& path);
+
+        template <typename... Str_Pack>
+            void load_from_file(
+                const str_type& path,
+                const str_type& path2,
+                const Str_Pack&... pathn
+            );
+
+    //Erasing and dumping
             //Erases content with current tag
         virtual void erase();
 
@@ -92,8 +116,9 @@ class Tag_Parser{
             //  external storage space.
         virtual void dump_to(storage_type& collector);
 
-        virtual void raw(parser_type&& new_parser);
+        virtual void raw(raw_type&& new_parser);
 
+    //Constructors and destructor
         Tag_Parser(const Tag_Parser&)             = delete;
         Tag_Parser(Tag_Parser&&)                  = delete;
         Tag_Parser& operator=(const Tag_Parser&)  = delete;
@@ -102,17 +127,17 @@ class Tag_Parser{
 
     protected:
         struct bookmark_type{
-            str_type                            m_lang;
-            str_type                            m_tag;
-            typename parser_type::range_type    m_range;
-            typename parser_type::iter_type     m_ptr;
+            str_type                        m_lang;
+            str_type                        m_tag;
+            typename raw_type::range_type   m_range;
+            typename raw_type::iter_type    m_ptr;
 
             bookmark_type();
         };
 
-        parser_type                             m_parser;
-        bookmark_type                           m_place;
-        std::unique_ptr<bookmark_type>          m_bookmark;
+        raw_type                            m_raw;
+        bookmark_type                       m_place;
+        std::unique_ptr<bookmark_type>      m_bookmark;
 
             //Optional override
         virtual void initial_load();
@@ -120,7 +145,7 @@ class Tag_Parser{
         Tag_Parser();
 
         template <typename... Str_Pack>
-        Tag_Parser(const str_type& file1, const Str_Pack&... filen);
+            Tag_Parser(const str_type& file1, const Str_Pack&... filen);
 };
 
 #include "Tag_Parser.inl"
